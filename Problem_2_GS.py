@@ -2,29 +2,45 @@
 """
 
 MAS480 Mathematics and AI
-Homework 3 - Problem (1) Metropolis-Hasting Algorithm
+Homework 3 - Problem (2) Gibbs Sampling
 20180127 Woojin Kim
 
 """
-
 import graph
 import sampling as sp
 
-def construct_markov_chain_MH(g):
+def get_diff_coordinate(coord1, coord2):
+    for i in range(3):
+        if coord1[i] != coord2[i]:
+            return i
+
+def construct_markov_chain_GS(g):
     edges = g.edges()
-    
-    r = 10 # max number of edges in G
+
+    d = 3 # dimension of state
     
     for edge in edges:
         (i, j) = edge.endpoints()
         if i == j:
             continue
         else:
-            pi_i = g.get_target_dist(i.state())
-            pi_j = g.get_target_dist(j.state())
+            coordinate_i = i.state() # origin
+            coordinate_j = j.state() # destination
+            
+            pi_j = g.get_target_dist(coordinate_j)
+            
+            # Find different coordinate's index
+            diff_coordinate = get_diff_coordinate(coordinate_i, coordinate_j)
+            
+            # Compute marginal distribution
+            temp_coordinate = list(coordinate_i)
+            denominator = 0
+            for new_coord in [1, 2, 3, 4]:
+                temp_coordinate[diff_coordinate] = new_coord
+                denominator += g.get_target_dist(tuple(temp_coordinate))
             
             # Update transition probability
-            edge.update_edge(min(1, pi_j / pi_i) / r)
+            edge.update_edge(pi_j / denominator / d)
     
     for edge in edges:
         (i, j) = edge.endpoints()
@@ -38,13 +54,13 @@ if __name__ == "__main__":
     state_list = [1, 2, 3, 4]
     G = graph.generate_Graph(state_list)
     graph.init_target_stationary_distribution(G)
-    construct_markov_chain_MH(G)
+    construct_markov_chain_GS(G)
     
     # Problem a
     # With the initial point (1, 1, 1), do the sampling with
     # length 10.
-    print("### Metropolis-Hasting Algorithm ####")
-    print('########## Problem (1) - a ##########')
+    print('########## Gibbs Sampling  ##########')
+    print('########## Problem (2) - a ##########')
     print('')
     sp.sampling(G, (1, 1, 1), 10, 1, printable = True)
     print('')
@@ -61,7 +77,7 @@ if __name__ == "__main__":
     long_term_averages = sp.calculate_long_term_averages(list_t, samples, 500)
     target_dist = G.target_distribution()
     
-    print('########## Problem (1) - c ##########\n')
+    print('########## Problem (2) - c ##########\n')
     for index in range(len(long_term_averages)):
         sp.compare_average_and_target(long_term_averages[index], target_dist, list_t[index])
     

@@ -88,22 +88,16 @@ class Graph:
         return self._target_dist[x]
     
 def check_possible_edge(state1, state2):
-    result = False
     count = 0
     
-    if state1[0] == state2[0]:
-        count += 1
-    
-    if state1[1] == state2[1]:
-        count += 1
-    
-    if state1[2] == state2[2]:
-        count += 1
+    for index in range(3):
+        if state1[index] == state2[index]:
+            count += 1  
     
     if count >= 2:
-        result = True
+        return True
     
-    return result
+    return False
     
 def generate_Graph(state_list):
     g = Graph()
